@@ -1,0 +1,5 @@
+package-lock.json
+**/dist
+.local
+**/playwright-report
+**/test-results

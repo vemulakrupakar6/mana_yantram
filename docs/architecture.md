@@ -1,0 +1,19 @@
+# Architecture
+
+Mana Yantram is a modular monolith with independent React and Express processes. The two applications share a workspace and lockfile. The frontend talks only to versioned REST endpoints. The Express app is initialized separately from its HTTP listener so Supertest can exercise the same routes and middleware.
+
+| Area            | Design                                                                                                                                                                                                                                                      |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend        | React Router layouts and role guards, React Hook Form and Zod, TanStack Query for account and portal API state, Zustand for in-memory session data, English and Telugu resources via i18next                                                                |
+| Backend         | Express modules for health, authentication, users and role-based access, Prisma's PostgreSQL driver adapter, structured Pino logs, server-owned request IDs and consistent response envelopes                                                               |
+| PostgreSQL      | Prisma migration, separate role membership and per-role onboarding, explicit consent and security audit records                                                                                                                                             |
+| Authorization   | JWT claims identify the user and session family. The API reads current user status, membership, permissions and session state before serving protected routes. Geographic jurisdiction checks can extend the portal middleware after masters are available. |
+| Refresh         | Random opaque cookie values, SHA-256 hashes in PostgreSQL, absolute expiry inherited at each rotation. Account row locks serialize login, refresh, logout and password changes. Reuse of a rotated, unexpired token revokes the family.                     |
+| Browser session | Axios coordinates one refresh at a time per tab and retries expired-token requests once. Web Locks serialize cookie writes across tabs where available. The browser may ask the user to sign in again if simultaneous refreshes occur without Web Locks.    |
+| Revocation      | Logout revokes the current family. Logout-all and password change revoke all families for the account. Protected requests reject revoked families even if their JWT remains within its validity period.                                                     |
+| Abuse controls  | PostgreSQL fixed-window counters for sensitive endpoints. Login is limited per IP and per normalized username/IP pair. A periodic job removes expired entries.                                                                                              |
+| Browser trust   | Exact CORS allowlist, HttpOnly same-site refresh cookie, explicit origin and custom header checks for cookie operations, Secure cookies in production mode and SameSite=None requires Secure.                                                               |
+
+The only browser preference kept in local storage is the selected language. Opacity and cryptographic hashing keep refresh values out of the database and audit records. Desktop and mobile screens use the same components and locally stored agricultural photography.
+
+Milestones 1 and 2 are for local development and restricted demonstrations. Demo policy version `demo-1.0` is the version recorded at signup. Milestone 3 introduces business profiles, geographic masters and detailed onboarding. Booking, equipment management, provider verification, payments, reports and notification delivery belong to later milestones.
