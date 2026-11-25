@@ -32,8 +32,7 @@ test("farmer registration, cookie restoration, expired access refresh, password 
   const username = uniqueUsername();
   await register(page, username);
   await expect(page).toHaveURL("/onboarding");
-  await expect(page.getByRole("heading", { name: "Your account is ready" })).toBeVisible();
-  await expect(page.getByText("Not started")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Set up your farmer profile" })).toBeVisible();
   expect(await context.cookies("http://localhost:5100/api/v1/auth/refresh")).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
@@ -46,12 +45,13 @@ test("farmer registration, cookie restoration, expired access refresh, password 
   );
   expect(await page.evaluate(() => Object.keys(localStorage))).toEqual(["mana-language"]);
   await page.reload();
-  await expect(page.getByRole("heading", { name: "Your account is ready" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Set up your farmer profile" })).toBeVisible();
 
-  await page.getByRole("link", { name: "Open dashboard preview" }).click();
+  // The profile is not filled in yet, so open the dashboard through the preview flag.
+  await page.goto("/farmer/dashboard");
   await expect(page.getByRole("heading", { name: "Farmer dashboard" })).toBeVisible();
   await expect(page.getByText("No bookings to show.")).toBeVisible();
-  await page.waitForTimeout(4500); // The browser test API issues four-second access tokens.
+  await page.waitForTimeout(15_500); // The browser test API issues fifteen-second access tokens.
   const renewal = page.waitForResponse(
     (response) => response.url().endsWith("/auth/refresh") && response.status() === 200,
   );
@@ -86,15 +86,14 @@ test("farmer registration, cookie restoration, expired access refresh, password 
   await expect(page).toHaveURL("/profile");
   await expect(page.getByLabel("Display name")).toHaveValue("Mana Browser Farmer");
 });
-test("provider registration, duplicate field feedback and unverified dashboard", async ({
+test("provider registration, provider-type onboarding and duplicate field feedback", async ({
   page,
 }) => {
   const username = uniqueUsername();
   await register(page, username, "Service Provider");
   await expect(page).toHaveURL("/onboarding");
-  await page.getByRole("link", { name: "Open dashboard preview" }).click();
-  await expect(page.getByRole("heading", { name: "Provider dashboard" })).toBeVisible();
-  await expect(page.getByText("Unverified", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Register your service unit" })).toBeVisible();
+  await expect(page.getByRole("radio")).toHaveCount(4);
   await page.getByRole("button", { name: "Log out", exact: true }).click();
   await expect(page).toHaveURL("/login");
   await register(page, username.toUpperCase(), "Service Provider");

@@ -13,7 +13,7 @@ export const roleLabels = {
 } as const;
 export type RoleCode = keyof typeof roleLabels;
 export type PublicRole = "FARMER" | "PROVIDER";
-export type Portal = "farmer" | "provider" | "admin";
+export type Portal = "farmer" | "provider" | "operator" | "admin";
 export type OnboardingStatus = "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
 export interface AuthUser {
   id: string;
@@ -23,6 +23,14 @@ export interface AuthUser {
   permissions: string[];
   preferredLanguage: Language;
   onboarding: Partial<Record<RoleCode, OnboardingStatus>>;
+  mustChangePassword: boolean;
+  jurisdiction: Jurisdiction | null;
+}
+export type JurisdictionLevel = "STATE" | "DISTRICT" | "MANDAL";
+export interface Jurisdiction {
+  level: JurisdictionLevel;
+  districtId: string | null;
+  mandalId: string | null;
 }
 export interface AuthSession {
   accessToken: string;

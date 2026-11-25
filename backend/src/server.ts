@@ -1,4 +1,5 @@
 import { cleanExpiredRateLimits } from "./middleware/rate-limit.js";
+import { cleanupUnattachedFiles } from "./modules/files/files.service.js";
 import { app } from "./app.js";
 import { database } from "./config/database.js";
 import { env } from "./config/env.js";
@@ -19,11 +20,17 @@ function cleanRateLimits() {
 }
 const cleanup = setInterval(cleanRateLimits, 60_000).unref();
 cleanRateLimits();
+function cleanFiles() {
+  void cleanupUnattachedFiles().catch(() => logger.warn("File cleanup will retry"));
+}
+const fileCleanup = setInterval(cleanFiles, 60 * 60_000).unref();
+cleanFiles();
 let stopping = false;
 function shutdown() {
   if (stopping) return;
   stopping = true;
   clearInterval(cleanup);
+  clearInterval(fileCleanup);
   const deadline = setTimeout(() => {
     server.closeAllConnections();
     process.exit(1);

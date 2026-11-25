@@ -42,6 +42,8 @@ export const passwordSchema = z
     path: ["newPassword"],
     message: "Choose a different password.",
   });
+export const addRoleSchema = z.strictObject({ role: z.enum(publicRoles) });
+export type AddRoleInput = z.infer<typeof addRoleSchema>;
 export type RegistrationInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type PasswordInput = z.infer<typeof passwordSchema>;

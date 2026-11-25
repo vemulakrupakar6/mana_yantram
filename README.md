@@ -51,7 +51,7 @@ You can also run `npm run dev -w frontend` and `npm run dev -w backend` in separ
 
 The seed always installs nine roles and portal permissions. Set `SEED_DEMO_USERS=true` in the backend environment together with `DEMO_FARMER_PASSWORD`, `DEMO_PROVIDER_PASSWORD`, `DEMO_DISTRICT_OFFICER_PASSWORD` and `DEMO_STATE_ADMIN_PASSWORD`. Then rerun the seed. It creates `farmer_demo`, `provider_demo`, `district_officer_demo` and `state_admin_demo` once. Existing demo passwords can be changed from the account page. Demo accounts are disabled by default and production-mode startup rejects demo seeding.
 
-Set `VITE_DASHBOARD_PREVIEW=true` in the frontend environment and restart Vite to open the farmer and provider shells from the onboarding page. New accounts retain their actual onboarding status. Department users assigned an authorized role go directly to the department dashboard.
+Set `VITE_DASHBOARD_PREVIEW=true` in the frontend environment and restart Vite to open the farmer and provider dashboards by URL before onboarding is finished (the browser tests use it). New accounts retain their actual onboarding status, and the onboarding page now asks for the farmer profile or the provider type and unit details. Department users assigned an authorized role go directly to the department dashboard.
 
 ## Verification
 
@@ -64,11 +64,13 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-The test commands apply migrations and seed the dedicated database. Set `DB_TEST_NAME` to a separate database whose name ends in `_test`. The Playwright suite starts isolated frontend and backend servers on ports 5180 and 5100. Set `PLAYWRIGHT_CHANNEL=msedge` or `chrome` in the shell if using a system browser.
+The test commands apply migrations and seed the dedicated database. Set `DB_TEST_NAME` to a separate database whose name ends in `_test`, and make sure `DATABASE_URL` in `backend/.env` does not point at that same database (the safety check refuses to run otherwise). Preparing the test database also clears stored rate-limit counters, so repeated runs never hit registration limits.
+
+The Playwright suite starts isolated frontend and backend servers on ports 5180 and 5100 and uses a temporary file storage folder. Set `PLAYWRIGHT_CHANNEL=msedge` or `chrome` in the shell to use a system browser instead of downloading Chromium. It covers: the account flows; a farmer completing the profile and adding a plot; a provider building and submitting a full application; an officer returning it, the provider fixing and resubmitting, and approval; an administrator deactivating the provider; and an automated check that every new page fits 360, 768 and 1440 px without sideways scrolling, in English and Telugu.
 
 ## Postman
 
-Import the [collection](docs/postman/Mana%20Yantram.postman_collection.json) and [local environment](docs/postman/Mana%20Yantram%20Local.postman_environment.json). Activate the environment and fill `username` and `password`. Register or sign in, then send protected requests with the captured `accessToken`. Postman's cookie jar sends the refresh cookie. Set `newPassword` before testing password change. Portal requests require an account with the corresponding role.
+Import the [collection](docs/postman/Mana%20Yantram.postman_collection.json) and [local environment](docs/postman/Mana%20Yantram%20Local.postman_environment.json). Activate the environment and fill `username` and `password`. Register or sign in, then send protected requests with the captured `accessToken`. Postman's cookie jar sends the refresh cookie. Set `newPassword` before testing password change and `temporaryPassword` (12 or more characters) before creating users, operators or assisted farmers. The Milestone 3 folders chain through environment variables that earlier requests fill in (`districtId`, `fileId`, `providerId`, `equipmentId`, ...), so run each folder top to bottom with the matching role: farmer, provider, field agent, or a district officer or administrator for the department folders. Portal requests require an account with the corresponding role.
 
 ## Troubleshooting
 
@@ -78,4 +80,15 @@ Import the [collection](docs/postman/Mana%20Yantram.postman_collection.json) and
 - If a session ends after a password change, logout or refresh reuse, sign in again. The server verifies that the session family is still active on every protected request.
 - On startup environment errors, check the variable names printed by the backend and compare their formats to `.env.example`.
 
-See [architecture](docs/architecture.md), the [API guide](docs/api.md) and [implementation status](docs/implementation-status.md) for design decisions, current coverage and milestone boundaries. Password-only access is intended for local development and restricted demonstrations. Geographic masters, agricultural business profiles and detailed onboarding are planned for Milestone 3.
+See [architecture](docs/architecture.md), the [API guide](docs/api.md) and [implementation status](docs/implementation-status.md) for design decisions, current coverage and milestone boundaries. Password-only access is intended for local development and restricted demonstrations. See [implementation status](docs/implementation-status.md) for what Milestone 3 delivers and what is deferred.
+
+## Milestone 3 operations
+
+New backend environment variables (see `backend/.env.example`): `STORAGE_ROOT`, `UPLOAD_MAX_DOCUMENT_MB`, `UPLOAD_MAX_PHOTO_MB`, `FIELD_ENCRYPTION_KEY` (32 random bytes, base64) and `AADHAAR_HASH_KEY` (32+ characters). Generate the encryption key with `node -p "require('node:crypto').randomBytes(32).toString('base64')"`. Uploaded files live under `backend/storage/` (git-ignored).
+
+- **First administrator:** set `BOOTSTRAP_ADMIN_USERNAME` and `BOOTSTRAP_ADMIN_PASSWORD` (12–128 characters) in the shell, then run `npm run db:seed -w backend` followed by `npm run admin:create -w backend`. It refuses if a SUPER_ADMIN already exists unless `--force` is passed, and in production it refuses a password read from a `.env` file.
+- **Geography:** `npm run db:seed -w backend` loads a small sample (fake LGD codes starting with `T`). Load real data with `npm run db:import-geo -w backend -- path/to/geo.csv` (columns: `district_lgd,district_en,district_te,mandal_lgd,mandal_en,mandal_te,village_lgd,village_en,village_te`). The import upserts by LGD code and never deletes. IFSC data can optionally be loaded with `npm run db:import-ifsc -w backend -- path/to/ifsc.csv` (columns `ifsc,bank,branch,district`); while that table is empty only the IFSC format is checked.
+- **Passwords:** every account signs in with username and password; there is no OTP. Accounts created by someone else (a department user by an admin, an operator by a provider, or a farmer by a field agent) start with a temporary password and must change it before anything else. There is no self-service password recovery: ask your provider, field agent or the department helpdesk to reset it.
+- **Uploaded files** are stored on the server disk under `STORAGE_ROOT` (default `backend/storage/`) and are referenced from the database. They are not backed up, scanned for malware or encrypted at rest yet; include the folder in your backups and treat both as required before production.
+- **Rate caps** (an optional rule limiting what providers can charge) are off by default. A state or super administrator turns enforcement on and manages the caps in the admin portal under Settings (`/admin/settings`). A district cap wins over a statewide cap; providers see the applicable maximum next to the rate field, and a rate above it is refused with `RATE_ABOVE_CAP`. Existing rates are never changed, and editing other fields of an above-cap line is still allowed.
+- **Reviewing providers:** department users with `provider.view` see applications in their jurisdiction under _Providers_ (the _Verification_ menu opens the submitted queue); `provider.verify` allows review, approval, return and rejection; `provider.suspend` allows suspend, blacklist and reinstate.

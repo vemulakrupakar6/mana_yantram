@@ -14,6 +14,7 @@ import {
   Sprout,
   Tractor,
   TrendingUp,
+  UserPlus,
   UserRound,
   Users,
   WalletCards,
@@ -22,44 +23,63 @@ import {
 } from "lucide-react";
 import type { Portal } from "@/types/auth";
 
-type MenuItem = { label: string; icon: LucideIcon; href?: string };
+type MenuItem = { label: string; icon: LucideIcon; href?: string; permission?: string };
 export const portalMenus: Record<Portal, MenuItem[]> = {
   farmer: [
     { label: "dashboard", icon: LayoutDashboard, href: "/farmer/dashboard" },
     { label: "findServices", icon: Tractor, href: "/services" },
     { label: "myBookings", icon: CalendarDays },
-    { label: "myPlots", icon: Map },
+    { label: "myPlots", icon: Map, href: "/farmer/plots" },
     { label: "payments", icon: WalletCards },
     { label: "grievances", icon: CircleHelp },
-    { label: "myProfile", icon: UserRound, href: "/profile" },
+    { label: "myProfile", icon: UserRound, href: "/farmer/profile" },
   ],
   provider: [
     { label: "dashboard", icon: LayoutDashboard, href: "/provider/dashboard" },
     { label: "requests", icon: ClipboardList },
-    { label: "myEquipment", icon: Tractor },
+    { label: "myEquipment", icon: Tractor, href: "/provider/equipment" },
     { label: "rates", icon: Wrench },
-    { label: "availability", icon: CalendarDays },
-    { label: "operators", icon: Users },
+    { label: "availability", icon: CalendarDays, href: "/provider/availability" },
+    { label: "operators", icon: Users, href: "/provider/operators" },
+    { label: "coverageAndHours", icon: Map, href: "/provider/coverage" },
     { label: "earnings", icon: HandCoins },
-    { label: "documents", icon: FileText },
+    { label: "providerProfile", icon: UserRound, href: "/provider/profile" },
+    { label: "providerDocuments", icon: FileText, href: "/provider/documents" },
+    { label: "bankAccount", icon: WalletCards, href: "/provider/bank" },
   ],
+  operator: [{ label: "dashboard", icon: LayoutDashboard, href: "/operator/dashboard" }],
   admin: [
     { label: "dashboard", icon: LayoutDashboard, href: "/admin/dashboard" },
-    { label: "farmers", icon: Sprout },
-    { label: "providers", icon: Users },
-    { label: "verification", icon: ShieldCheck },
+    { label: "farmers", icon: Sprout, href: "/admin/farmers", permission: "farmer.view" },
+    {
+      label: "assistedRegistration",
+      icon: UserPlus,
+      href: "/admin/assisted-registration",
+      permission: "farmer.register_assisted",
+    },
+    { label: "providers", icon: Users, href: "/admin/providers", permission: "provider.view" },
+    {
+      label: "verification",
+      icon: ShieldCheck,
+      href: "/admin/providers?status=SUBMITTED",
+      permission: "provider.verify",
+    },
     { label: "equipment", icon: Tractor },
     { label: "bookings", icon: CalendarDays },
     { label: "payments", icon: WalletCards },
     { label: "grievances", icon: CircleHelp },
     { label: "reports", icon: TrendingUp },
     { label: "masters", icon: Database },
-    { label: "userRoles", icon: Users },
+    { label: "userRoles", icon: Users, href: "/admin/users", permission: "users.manage" },
     { label: "auditLogs", icon: ClipboardCheck },
-    { label: "settings", icon: Settings },
+    { label: "settings", icon: Settings, href: "/admin/settings", permission: "settings.manage" },
   ],
 };
 export const dashboardMetrics = {
+  operator: [
+    ["assignedEquipment", Tractor],
+    ["incoming", ClipboardList],
+  ],
   farmer: [
     ["totalBookings", CalendarDays],
     ["inProgress", Gauge],

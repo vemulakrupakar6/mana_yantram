@@ -8,6 +8,8 @@ const summaryFields = {
   username: true,
   displayName: true,
   preferredLanguage: true,
+  mustChangePassword: true,
+  jurisdiction: { select: { level: true, districtId: true, mandalId: true } },
   roles: {
     select: {
       role: {
@@ -35,6 +37,8 @@ export function toSummary(
     onboarding: Object.fromEntries(
       user.roles.map(({ role, onboarding }) => [role.code, onboarding?.status ?? "NOT_STARTED"]),
     ),
+    mustChangePassword: user.mustChangePassword,
+    jurisdiction: user.jurisdiction,
   };
 }
 export async function getSummary(id: string, client: Prisma.TransactionClient = database) {
@@ -71,19 +75,24 @@ export function revokeSessions(
     data: { revokedAt: now },
   });
 }
+export interface AuditOptions {
+  entityType?: string;
+  entityId?: string;
+  metadata?: Prisma.InputJsonObject;
+}
 export function audit(
   client: Prisma.TransactionClient,
   details: RequestDetails,
   action: string,
-  userId?: string,
-  metadata?: Prisma.InputJsonObject,
+  actorId?: string,
+  { entityType = "user", entityId = actorId, metadata }: AuditOptions = {},
 ) {
   return client.auditLog.create({
     data: {
-      actorUserId: userId,
+      actorUserId: actorId,
       action,
-      entityType: "user",
-      entityId: userId,
+      entityType,
+      entityId,
       metadata,
       requestId: details.requestId,
       ipAddress: details.ipAddress,

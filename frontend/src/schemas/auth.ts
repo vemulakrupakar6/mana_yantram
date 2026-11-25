@@ -42,11 +42,7 @@ export const profileSchema = z.object({
   mobile: z
     .string()
     .trim()
-    .max(20, "mobileInvalid")
-    .refine(
-      (value) => !value || (/^\+?[\d ()-]+$/.test(value) && (value.match(/\d/g)?.length ?? 0) >= 7),
-      "mobileInvalid",
-    ),
+    .refine((value) => !value || /^[6-9]\d{9}$/.test(value), "mobileInvalid"),
   email: z
     .string()
     .trim()

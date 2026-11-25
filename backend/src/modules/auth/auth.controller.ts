@@ -47,3 +47,6 @@ export const changePassword: RequestHandler = async (req, res) => {
   clearRefreshCookie(res);
   success(res, "Password changed. Sign in again.");
 };
+export const addRole: RequestHandler = async (req, res) => {
+  success(res, "Role added.", await auth.addRole(req.auth!.id, req.body, requestDetails(req)), 201);
+};

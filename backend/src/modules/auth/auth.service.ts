@@ -3,12 +3,13 @@ import { Prisma } from "@prisma/client";
 import { database } from "../../config/database.js";
 import { env } from "../../config/env.js";
 import { AppError } from "../../common/errors/app-error.js";
-import { policyVersion } from "../../common/constants/policies.js";
+import { consentPurposes, policyVersion } from "../../common/constants/policies.js";
+import { publicRoles } from "../rbac/roles.js";
 import { hashPassword, missingAccountHash, verifyPassword } from "../../utils/password.js";
 import { createRefreshToken, digest } from "../../utils/crypto.js";
 import { signAccessToken } from "../../utils/jwt.js";
 import { audit, getSummary, lockUser, revokeSessions } from "./auth.repository.js";
-import type { LoginInput, PasswordInput, RegistrationInput } from "./auth.schema.js";
+import type { AddRoleInput, LoginInput, PasswordInput, RegistrationInput } from "./auth.schema.js";
 import type { RequestDetails, Session, UserSummary } from "./auth.types.js";
 
 function invalidCredentials() {
@@ -69,9 +70,10 @@ export async function register(input: RegistrationInput, details: RequestDetails
           consentType,
           documentVersion: policyVersion,
           language: input.preferredLanguage,
+          purposes: [...consentPurposes],
         })),
       });
-      await audit(tx, details, "REGISTER", user.id, { role: input.role });
+      await audit(tx, details, "REGISTER", user.id, { metadata: { role: input.role } });
       return session(await getSummary(user.id, tx), await issueRefresh(tx, user.id));
     });
   } catch (error) {
@@ -97,9 +99,17 @@ export async function login(input: LoginInput, details: RequestDetails) {
     account?.passwordHash ?? (await missingAccountHash()),
     input.password,
   );
-  if (!account || !valid || account.status !== "ACTIVE") {
+  if (!account || !valid) {
     await audit(database, details, "LOGIN_FAILED", account?.id);
     throw invalidCredentials();
+  }
+  if (account.status !== "ACTIVE") {
+    await audit(database, details, "LOGIN_REFUSED_INACTIVE", account.id);
+    throw new AppError(
+      403,
+      "ACCOUNT_DEACTIVATED",
+      "Your account has been deactivated. Contact the department.",
+    );
   }
   const result = await database.$transaction(async (tx) => {
     const current = await lockUser(tx, account.id);
@@ -132,7 +142,9 @@ export async function refresh(token: string | undefined, details: RequestDetails
     if (!row || row.expiresAt <= now) return null;
     if (row.replacedById) {
       await revokeSessions(tx, row.userId, now, row.familyId);
-      await audit(tx, details, "REFRESH_REUSE", row.userId, { familyId: row.familyId });
+      await audit(tx, details, "REFRESH_REUSE", row.userId, {
+        metadata: { familyId: row.familyId },
+      });
       return { reused: true } as const;
     }
     if (row.revokedAt) return null;
@@ -189,8 +201,34 @@ export async function changePassword(
     const current = await lockUser(tx, userId);
     if (!current || current.status !== "ACTIVE" || current.passwordHash !== user.passwordHash)
       throw invalidSession();
-    await tx.user.update({ where: { id: userId }, data: { passwordHash } });
+    await tx.user.update({
+      where: { id: userId },
+      data: { passwordHash, mustChangePassword: false },
+    });
     await revokeSessions(tx, userId, new Date());
     await audit(tx, details, "PASSWORD_CHANGED", userId);
+  });
+}
+
+export async function addRole(userId: string, input: AddRoleInput, details: RequestDetails) {
+  return database.$transaction(async (tx) => {
+    const user = await lockUser(tx, userId);
+    if (!user || user.status !== "ACTIVE") throw invalidSession();
+    const held = await tx.userRole.findMany({
+      where: { userId },
+      select: { role: { select: { code: true } } },
+    });
+    const codes = held.map(({ role }) => role.code);
+    if (codes.includes(input.role))
+      throw new AppError(409, "ROLE_EXISTS", "You already have that role.");
+    // Only self-service public accounts can add a public role; department and operator accounts cannot.
+    if (!codes.length || codes.some((code) => !publicRoles.includes(code as never)))
+      throw new AppError(403, "ROLE_NOT_GRANTABLE", "This account type cannot add another role.");
+    const role = await tx.role.findUnique({ where: { code: input.role }, select: { id: true } });
+    if (!role) throw new AppError(503, "ROLE_UNAVAILABLE", "That role is unavailable.");
+    await tx.userRole.create({ data: { userId, roleId: role.id } });
+    await tx.userRoleOnboarding.create({ data: { userId, roleId: role.id } });
+    await audit(tx, details, "ROLE_ADDED", userId, { metadata: { role: input.role } });
+    return getSummary(userId, tx);
   });
 }

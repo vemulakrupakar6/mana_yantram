@@ -5,22 +5,17 @@ import { useAuth } from "@/stores/auth";
 import type { AuthUser, Portal, RoleCode } from "@/types/auth";
 
 export function portalFor(role: RoleCode | null): Portal | null {
-  if (!role || role === "OPERATOR") return null;
+  if (!role) return null;
   if (role === "FARMER") return "farmer";
   if (role === "PROVIDER") return "provider";
+  if (role === "OPERATOR") return "operator";
   return "admin";
 }
 export function onboardingPending(user: AuthUser, role: RoleCode) {
   return (role === "FARMER" || role === "PROVIDER") && user.onboarding[role] !== "COMPLETED";
 }
-const allowedReturn = new Set([
-  "/onboarding",
-  "/profile",
-  "/account/password",
-  "/farmer/dashboard",
-  "/provider/dashboard",
-  "/admin/dashboard",
-]);
+const allowedExact = new Set(["/onboarding", "/profile", "/account/password"]);
+const allowedPrefixes = ["/farmer/", "/provider/", "/operator/", "/admin/"];
 export function safeReturn(value: unknown): string | null {
   if (
     typeof value !== "string" ||
@@ -30,9 +25,12 @@ export function safeReturn(value: unknown): string | null {
   )
     return null;
   const path = value.split(/[?#]/)[0];
-  return allowedReturn.has(path) ? value : null;
+  return allowedExact.has(path) || allowedPrefixes.some((prefix) => path.startsWith(prefix))
+    ? value
+    : null;
 }
 export function userDestination(user: AuthUser, role: RoleCode | null, intended?: string | null) {
+  if (user.mustChangePassword) return "/account/password";
   if (!role && user.roles.length > 1) return "/select-role";
   const portal = portalFor(role);
   if (intended && ["/profile", "/account/password"].includes(intended.split(/[?#]/)[0]))
@@ -52,6 +50,8 @@ export function ProtectedRoute() {
   const signOutLocationKey = useAuth((state) => state.signOutLocationKey);
   const location = useLocation();
   if (isInitializing) return <FullPageLoader />;
+  if (user?.mustChangePassword && location.pathname !== "/account/password")
+    return <Navigate to="/account/password" replace state={{ mustChange: true }} />;
   if (!user)
     return (
       <Navigate
@@ -94,5 +94,10 @@ export function RoleGuard({ portal }: { portal: Portal }) {
   if (portalFor(role) !== portal) return <Navigate to="/403" replace />;
   if (onboardingPending(user, role) && !dashboardPreview)
     return <Navigate to="/onboarding" replace />;
+  return <Outlet />;
+}
+export function PermissionGuard({ permission }: { permission: string }) {
+  const user = useAuth((state) => state.user)!;
+  if (!user.permissions.includes(permission)) return <Navigate to="/403" replace />;
   return <Outlet />;
 }

@@ -188,11 +188,16 @@ describe("sign in and access tokens", () => {
       await database.auditLog.count({ where: { actorUserId: user.id, action: "LOGIN_FAILED" } }),
     ).toBe(1);
   });
-  it.each(["INACTIVE", "SUSPENDED"] as const)("rejects %s accounts", async (status) => {
-    const user = await provision("FARMER", status);
-    const response = await login(user.username).expect(401);
-    expect(response.body.code).toBe("INVALID_CREDENTIALS");
-  });
+  it.each(["INACTIVE", "SUSPENDED"] as const)(
+    "refuses %s accounts with ACCOUNT_DEACTIVATED only for the right password",
+    async (status) => {
+      const user = await provision("FARMER", status);
+      const response = await login(user.username).expect(403);
+      expect(response.body.code).toBe("ACCOUNT_DEACTIVATED");
+      const wrong = await login(user.username, "definitely wrong password").expect(401);
+      expect(wrong.body.code).toBe("INVALID_CREDENTIALS");
+    },
+  );
   it("rate limits repeated username and IP pairs", async () => {
     const username = newUsername();
     for (let count = 0; count < 5; count++) await login(username, "wrong").expect(401);
@@ -359,7 +364,7 @@ describe("authorization and account details", () => {
         displayName: "Test Farmer",
         preferredLanguage: "te",
         email: "test@example.invalid",
-        mobile: "+91 98765 43210",
+        mobile: "9876543210",
       })
       .expect(200);
     expect(patch.body.data).toMatchObject({

@@ -64,7 +64,7 @@ export function StatusBadge({
   tone = "neutral",
 }: {
   children: ReactNode;
-  tone?: "neutral" | "warning" | "success";
+  tone?: "neutral" | "warning" | "success" | "info" | "danger" | "orange";
 }) {
   return <span className={"status-badge status-" + tone}>{children}</span>;
 }

@@ -56,6 +56,7 @@ export function LoginPage() {
             {t(errors.root.message)}
           </p>
         )}
+        <p className="field-hint">{t("forgotPassword")}</p>
         <Button type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
           {isSubmitting && <LoadingSpinner />}
           {t("signIn")}

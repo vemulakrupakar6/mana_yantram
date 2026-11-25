@@ -3,6 +3,9 @@ import { CheckCircle2, ShieldCheck } from "lucide-react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { FarmerProfileForm } from "@/components/farmer/FarmerProfileForm";
+import { ProviderProfileForm } from "@/components/provider/ProviderProfileForm";
+import { refreshUser } from "@/pages/farmer/FarmerPages";
 import { PageHeader, StatusBadge } from "@/components/common/shared";
 import { LogoutButton } from "@/components/navigation/LogoutButton";
 import { dashboardPreview } from "@/config/app";
@@ -10,12 +13,50 @@ import { onboardingPending, portalFor, safeReturn, userDestination } from "@/rou
 import { useAuth } from "@/stores/auth";
 import { roleLabels, type RoleCode } from "@/types/auth";
 
+function FarmerOnboarding() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const language = useAuth((state) => state.user!.preferredLanguage);
+  return (
+    <section className="panel account-panel">
+      <PageHeader title={t("farmerOnboardingTitle")} description={t("farmerOnboardingBody")} />
+      <FarmerProfileForm
+        language={language}
+        onSaved={async () => {
+          await refreshUser();
+          navigate("/farmer/plots/new?first=1", { replace: true });
+        }}
+        extraActions={<LogoutButton />}
+      />
+    </section>
+  );
+}
+function ProviderOnboarding() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  return (
+    <section className="panel account-panel">
+      <PageHeader title={t("providerOnboardingTitle")} description={t("providerOnboardingBody")} />
+      <ProviderProfileForm
+        onSaved={async () => {
+          await refreshUser();
+          navigate("/provider/dashboard", { replace: true });
+        }}
+      />
+      <div className="form-actions">
+        <LogoutButton />
+      </div>
+    </section>
+  );
+}
 export function OnboardingPage() {
   const { t } = useTranslation();
   const user = useAuth((state) => state.user)!;
   const role = useAuth((state) => state.activeRole);
   if (!role || !onboardingPending(user, role))
     return <Navigate to={userDestination(user, role)} replace />;
+  if (role === "FARMER") return <FarmerOnboarding />;
+  if (role === "PROVIDER") return <ProviderOnboarding />;
   const portal = portalFor(role);
   return (
     <section className="panel account-panel">

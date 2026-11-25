@@ -4,11 +4,15 @@ import { EmptyState, StatusBadge } from "@/components/common/shared";
 import { ServiceCards } from "@/components/common/service-cards";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/stores/auth";
+import { useFarmerMe } from "@/pages/farmer/FarmerPages";
+import { useLocalizedName } from "@/hooks/useLocalizedName";
 import { DashboardHeading, Metrics } from "@/components/common/dashboard-panels";
 
 export function FarmerDashboard() {
   const { t } = useTranslation();
   const status = useAuth((state) => state.user!.onboarding.FARMER ?? "NOT_STARTED");
+  const name = useLocalizedName();
+  const farmer = useFarmerMe().data;
   return (
     <div className="dashboard-content">
       <DashboardHeading title="farmerDash" detail="farmerOverview" />
@@ -22,6 +26,26 @@ export function FarmerDashboard() {
             <Link to="/onboarding">{t("onboarding")}</Link>
           </Button>
         </div>
+      )}
+      {farmer && (
+        <section className="panel dashboard-section">
+          <div className="section-heading">
+            <div>
+              <h2>{farmer.fullName}</h2>
+              <p className="muted">
+                {name(farmer.village)}, {name(farmer.mandal)}, {name(farmer.district)}
+              </p>
+            </div>
+            <div className="inline-actions">
+              <Button variant="outline" asChild>
+                <Link to="/farmer/plots">{t("plotsCount", { count: farmer.plotCount })}</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/farmer/profile">{t("myProfile")}</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
       )}
       <Metrics portal="farmer" />
       <section className="dashboard-section">

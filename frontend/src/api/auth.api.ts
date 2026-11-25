@@ -4,6 +4,7 @@ import type {
   AuthSession,
   AuthUser,
   Portal,
+  PublicRole,
   RoleCode,
 } from "@/types/auth";
 import type { AccountInput, LoginInput, PasswordInput, ProfileInput } from "@/schemas/auth";
@@ -36,6 +37,8 @@ export const authApi = {
         email: input.email || null,
       })
     ).data.data,
+  addRole: async (role: PublicRole) =>
+    (await api.post<ApiResponse<AuthUser>>(endpoints.roles, { role })).data.data,
   checkPortal: async (portal: Portal, signal?: AbortSignal) =>
     (await api.get<ApiResponse<{ roles: RoleCode[] }>>(endpoints.portal(portal), { signal })).data
       .data,

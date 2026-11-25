@@ -7,5 +7,10 @@ export const endpoints = {
   me: "/auth/me",
   password: "/auth/change-password",
   profile: "/users/profile",
-  portal: (name: "farmer" | "provider" | "admin") => "/portals/" + name,
+  roles: "/auth/roles",
+  portal: (name: "farmer" | "provider" | "operator" | "admin") => "/portals/" + name,
+  adminUsers: "/admin/users",
+  districts: "/masters/districts",
+  mandals: (districtId: string) => "/masters/districts/" + districtId + "/mandals",
+  villages: (mandalId: string) => "/masters/mandals/" + mandalId + "/villages",
 } as const;

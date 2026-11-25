@@ -14,6 +14,8 @@ const session: AuthSession = {
     preferredLanguage: "en",
     permissions: ["portal:farmer"],
     onboarding: { FARMER: "NOT_STARTED" },
+    mustChangePassword: false,
+    jurisdiction: null,
   },
 };
 const defaultApi = api.defaults.adapter;

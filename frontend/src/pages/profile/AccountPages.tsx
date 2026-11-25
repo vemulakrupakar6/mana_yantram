@@ -1,5 +1,5 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useLocation } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
@@ -47,6 +47,44 @@ export function AccountPage() {
         </Button>
       </PageHeader>
       <AccountForm key={query.data.id} profile={query.data} />
+      <AddRoleCard />
+    </section>
+  );
+}
+function AddRoleCard() {
+  const { t } = useTranslation();
+  const user = useAuth((state) => state.user)!;
+  const navigate = useNavigate();
+  const missing = (["FARMER", "PROVIDER"] as const).filter((role) => !user.roles.includes(role));
+  // Only self-service accounts (farmer and/or provider) can add the other public role.
+  const eligible =
+    user.roles.length > 0 && user.roles.every((role) => role === "FARMER" || role === "PROVIDER");
+  const add = useMutation({
+    mutationFn: authApi.addRole,
+    onSuccess: (updated, role) => {
+      useAuth.getState().setUser(updated);
+      useAuth.getState().selectRole(role);
+      navigate("/onboarding", { replace: true });
+    },
+    onError: (error) => toast.error(t(errorKey(error))),
+  });
+  if (!eligible || !missing.length) return null;
+  return (
+    <section className="panel dashboard-section">
+      <h2>{t("addRoleTitle")}</h2>
+      <p className="muted">{t("addRoleBody")}</p>
+      <div className="form-actions">
+        {missing.map((role) => (
+          <Button
+            key={role}
+            variant="outline"
+            disabled={add.isPending}
+            onClick={() => add.mutate(role)}
+          >
+            {t(role === "PROVIDER" ? "addRoleProvider" : "addRoleFarmer")}
+          </Button>
+        ))}
+      </div>
     </section>
   );
 }
@@ -177,6 +215,7 @@ function AccountForm({ profile }: { profile: AccountProfile }) {
 export function ChangePasswordPage() {
   const { t } = useTranslation();
   const { key: locationKey } = useLocation();
+  const mustChange = useAuth((state) => state.user?.mustChangePassword) === true;
   const {
     register,
     handleSubmit,
@@ -201,6 +240,11 @@ export function ChangePasswordPage() {
   return (
     <section className="panel account-panel">
       <PageHeader title={t("changePassword")} />
+      {mustChange && (
+        <p className="dash-notice" role="status">
+          {t("mustChangeNotice")}
+        </p>
+      )}
       <form className="form-stack" onSubmit={submit} noValidate>
         <TextField
           label="currentPassword"
@@ -239,9 +283,12 @@ export function ChangePasswordPage() {
             {isSubmitting && <LoadingSpinner />}
             {t("save")}
           </Button>
-          <Button variant="outline" asChild>
-            <Link to="/profile">{t("cancel")}</Link>
-          </Button>
+          {!mustChange && (
+            <Button variant="outline" asChild>
+              <Link to="/profile">{t("cancel")}</Link>
+            </Button>
+          )}
+          {mustChange && <LogoutButton />}
         </div>
       </form>
     </section>

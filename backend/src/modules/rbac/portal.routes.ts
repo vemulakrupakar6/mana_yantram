@@ -24,6 +24,13 @@ portalRoutes.get(
   access,
 );
 portalRoutes.get(
+  "/operator",
+  authenticate,
+  authorize("OPERATOR"),
+  requirePermission(portalPermissions.OPERATOR),
+  access,
+);
+portalRoutes.get(
   "/admin",
   authenticate,
   authorize(...departmentRoles),

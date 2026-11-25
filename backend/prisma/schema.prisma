@@ -30,30 +30,57 @@ enum OnboardingStatus {
   COMPLETED
 }
 
+enum JurisdictionLevel {
+  STATE
+  DISTRICT
+  MANDAL
+}
+
 enum ConsentType {
   TERMS_OF_USE
   PRIVACY_NOTICE
 }
 
 model User {
-  id                String               @id @default(uuid()) @db.Uuid
-  username          String               @unique @db.VarChar(50)
-  passwordHash      String               @map("password_hash")
-  displayName       String?              @map("display_name") @db.VarChar(150)
-  mobile            String?              @db.VarChar(20)
-  mobileVerified    Boolean              @default(false) @map("mobile_verified")
-  email             String?              @db.VarChar(254)
-  emailVerified     Boolean              @default(false) @map("email_verified")
-  status            AccountStatus        @default(ACTIVE)
-  preferredLanguage String               @default("en") @map("preferred_language") @db.VarChar(5)
-  createdAt         DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt         DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
-  lastLoginAt       DateTime?            @map("last_login_at") @db.Timestamptz(3)
-  roles             UserRole[]
-  onboarding        UserRoleOnboarding[]
-  refreshTokens     RefreshToken[]
-  consents          Consent[]
-  audits            AuditLog[]
+  id                    String                 @id @default(uuid()) @db.Uuid
+  username              String                 @unique @db.VarChar(50)
+  passwordHash          String                 @map("password_hash")
+  displayName           String?                @map("display_name") @db.VarChar(150)
+  mobile                String?                @unique @db.VarChar(10)
+  mobileVerified        Boolean                @default(false) @map("mobile_verified")
+  email                 String?                @db.VarChar(254)
+  emailVerified         Boolean                @default(false) @map("email_verified")
+  status                AccountStatus          @default(ACTIVE)
+  preferredLanguage     String                 @default("en") @map("preferred_language") @db.VarChar(5)
+  createdAt             DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  lastLoginAt           DateTime?              @map("last_login_at") @db.Timestamptz(3)
+  mustChangePassword    Boolean                @default(false) @map("must_change_password")
+  createdById           String?                @map("created_by_id") @db.Uuid
+  deactivatedAt         DateTime?              @map("deactivated_at") @db.Timestamptz(3)
+  deactivatedById       String?                @map("deactivated_by_id") @db.Uuid
+  deactivationReason    String?                @map("deactivation_reason") @db.VarChar(300)
+  createdBy             User?                  @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdUsers          User[]                 @relation("UserCreatedBy")
+  deactivatedBy         User?                  @relation("UserDeactivatedBy", fields: [deactivatedById], references: [id], onDelete: SetNull)
+  deactivatedUsers      User[]                 @relation("UserDeactivatedBy")
+  jurisdiction          UserJurisdiction?
+  capturedConsents      Consent[]              @relation("ConsentCapturedBy")
+  roles                 UserRole[]
+  onboarding            UserRoleOnboarding[]
+  refreshTokens         RefreshToken[]
+  consents              Consent[]
+  audits                AuditLog[]
+  storedFiles           StoredFile[]
+  farmer                Farmer?                @relation("FarmerAccount")
+  registeredFarmers     Farmer[]               @relation("FarmerRegisteredBy")
+  provider              Provider?              @relation("ProviderAccount")
+  operator              Operator?              @relation("OperatorAccount")
+  approvedProviders     Provider[]             @relation("ProviderApprovedBy")
+  reviewedDocuments     ProviderDocument[]     @relation("DocumentReviewedBy")
+  reviewedBankAccounts  ProviderBankAccount[]  @relation("BankReviewedBy")
+  providerVerifications ProviderVerification[] @relation("VerificationActor")
+  availabilityBlocks    AvailabilityBlock[]    @relation("BlockCreatedBy")
 
   @@map("users")
 }
@@ -146,7 +173,10 @@ model Consent {
   documentVersion String      @map("document_version") @db.VarChar(30)
   language        String      @db.VarChar(5)
   acceptedAt      DateTime    @default(now()) @map("accepted_at") @db.Timestamptz(3)
+  purposes        String[]    @default([])
+  capturedById    String?     @map("captured_by_id") @db.Uuid
   user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  capturedBy      User?       @relation("ConsentCapturedBy", fields: [capturedById], references: [id], onDelete: SetNull)
 
   @@unique([userId, consentType, documentVersion])
   @@map("consents")
@@ -176,4 +206,595 @@ model AuthRateLimit {
 
   @@index([expiresAt])
   @@map("auth_rate_limits")
+}
+
+model UserJurisdiction {
+  userId     String            @id @map("user_id") @db.Uuid
+  level      JurisdictionLevel
+  districtId String?           @map("district_id") @db.Uuid
+  mandalId   String?           @map("mandal_id") @db.Uuid
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  district   District?         @relation(fields: [districtId], references: [id], onDelete: Restrict)
+  mandal     Mandal?           @relation(fields: [mandalId], references: [id], onDelete: Restrict)
+
+  @@index([districtId])
+  @@index([mandalId])
+  @@map("user_jurisdictions")
+}
+
+model District {
+  id            String             @id @default(uuid()) @db.Uuid
+  lgdCode       String             @unique @map("lgd_code") @db.VarChar(10)
+  nameEn        String             @map("name_en") @db.VarChar(100)
+  nameTe        String             @map("name_te") @db.VarChar(100)
+  isActive      Boolean            @default(true) @map("is_active")
+  mandals       Mandal[]
+  jurisdictions UserJurisdiction[]
+  farmers       Farmer[]
+  providers     Provider[]
+  rateCaps      RateCap[]
+
+  @@map("districts")
+}
+
+model Mandal {
+  id            String                 @id @default(uuid()) @db.Uuid
+  districtId    String                 @map("district_id") @db.Uuid
+  lgdCode       String                 @unique @map("lgd_code") @db.VarChar(10)
+  nameEn        String                 @map("name_en") @db.VarChar(100)
+  nameTe        String                 @map("name_te") @db.VarChar(100)
+  isActive      Boolean                @default(true) @map("is_active")
+  district      District               @relation(fields: [districtId], references: [id], onDelete: Restrict)
+  villages      Village[]
+  jurisdictions UserJurisdiction[]
+  farmers       Farmer[]
+  providers     Provider[]
+  coverageAreas ProviderCoverageArea[]
+
+  @@index([districtId])
+  @@map("mandals")
+}
+
+model Village {
+  id            String                 @id @default(uuid()) @db.Uuid
+  mandalId      String                 @map("mandal_id") @db.Uuid
+  lgdCode       String                 @unique @map("lgd_code") @db.VarChar(10)
+  nameEn        String                 @map("name_en") @db.VarChar(120)
+  nameTe        String                 @map("name_te") @db.VarChar(120)
+  isActive      Boolean                @default(true) @map("is_active")
+  mandal        Mandal                 @relation(fields: [mandalId], references: [id], onDelete: Restrict)
+  farmers       Farmer[]
+  plots         FarmerPlot[]
+  providers     Provider[]
+  coverageAreas ProviderCoverageArea[]
+
+  @@index([mandalId])
+  @@map("villages")
+}
+
+enum PricingBasis {
+  ACRE
+  HOUR
+  DAY
+}
+
+enum DocumentScope {
+  PROVIDER
+  EQUIPMENT
+}
+
+enum FileBucket {
+  DOCUMENT
+  EQUIPMENT_PHOTO
+}
+
+model ServiceCategory {
+  id                   String                 @id @default(uuid()) @db.Uuid
+  code                 String                 @unique @db.VarChar(40)
+  nameEn               String                 @map("name_en") @db.VarChar(100)
+  nameTe               String                 @map("name_te") @db.VarChar(100)
+  requiresPilotLicence Boolean                @default(false) @map("requires_pilot_licence")
+  isActive             Boolean                @default(true) @map("is_active")
+  sortOrder            Int                    @default(0) @map("sort_order")
+  operations           CategoryOperation[]
+  documentTypes        CategoryDocumentType[]
+  equipment            Equipment[]
+  rateCaps             RateCap[]
+
+  @@map("service_categories")
+}
+
+model Operation {
+  id                  String              @id @default(uuid()) @db.Uuid
+  code                String              @unique @db.VarChar(40)
+  nameEn              String              @map("name_en") @db.VarChar(100)
+  nameTe              String              @map("name_te") @db.VarChar(100)
+  defaultPricingBasis PricingBasis        @map("default_pricing_basis")
+  isActive            Boolean             @default(true) @map("is_active")
+  categories          CategoryOperation[]
+  services            EquipmentService[]
+  rateCaps            RateCap[]
+
+  @@map("operations")
+}
+
+model CategoryOperation {
+  categoryId  String          @map("category_id") @db.Uuid
+  operationId String          @map("operation_id") @db.Uuid
+  category    ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  operation   Operation       @relation(fields: [operationId], references: [id], onDelete: Cascade)
+
+  @@id([categoryId, operationId])
+  @@index([operationId])
+  @@map("category_operations")
+}
+
+model DocumentType {
+  code              String                 @id @db.VarChar(40)
+  nameEn            String                 @map("name_en") @db.VarChar(100)
+  nameTe            String                 @map("name_te") @db.VarChar(100)
+  scope             DocumentScope
+  isActive          Boolean                @default(true) @map("is_active")
+  sortOrder         Int                    @default(0) @map("sort_order")
+  categories        CategoryDocumentType[]
+  providerDocuments ProviderDocument[]
+
+  @@map("document_types")
+}
+
+model CategoryDocumentType {
+  categoryId       String          @map("category_id") @db.Uuid
+  documentTypeCode String          @map("document_type_code") @db.VarChar(40)
+  category         ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  documentType     DocumentType    @relation(fields: [documentTypeCode], references: [code], onDelete: Restrict)
+
+  @@id([categoryId, documentTypeCode])
+  @@index([documentTypeCode])
+  @@map("category_document_types")
+}
+
+model Crop {
+  id        String     @id @default(uuid()) @db.Uuid
+  code      String     @unique @db.VarChar(40)
+  nameEn    String     @map("name_en") @db.VarChar(100)
+  nameTe    String     @map("name_te") @db.VarChar(100)
+  isActive  Boolean    @default(true) @map("is_active")
+  plotCrops PlotCrop[]
+
+  @@map("crops")
+}
+
+model IfscCode {
+  ifsc     String  @id @db.Char(11)
+  bank     String  @db.VarChar(120)
+  branch   String  @db.VarChar(160)
+  district String? @db.VarChar(100)
+
+  @@map("ifsc_codes")
+}
+
+model AppSetting {
+  key         String   @id @db.VarChar(60)
+  value       Json
+  updatedById String?  @map("updated_by_id") @db.Uuid
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("app_settings")
+}
+
+model StoredFile {
+  id               String            @id @default(uuid()) @db.Uuid
+  bucket           FileBucket
+  relPath          String            @unique @map("rel_path") @db.VarChar(255)
+  originalName     String            @map("original_name") @db.VarChar(255)
+  mimeType         String            @map("mime_type") @db.VarChar(100)
+  sizeBytes        Int               @map("size_bytes")
+  sha256           String            @db.Char(64)
+  ownerUserId      String            @map("owner_user_id") @db.Uuid
+  entityType       String?           @map("entity_type") @db.VarChar(40)
+  entityId         String?           @map("entity_id") @db.Uuid
+  attachedAt       DateTime?         @map("attached_at") @db.Timestamptz(3)
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  deletedAt        DateTime?         @map("deleted_at") @db.Timestamptz(3)
+  owner            User              @relation(fields: [ownerUserId], references: [id], onDelete: Restrict)
+  providerDocument ProviderDocument?
+  equipmentPhoto   EquipmentPhoto?
+  operatorLicence  Operator?
+
+  @@index([ownerUserId, attachedAt])
+  @@index([entityType, entityId])
+  @@map("files")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum RelationType {
+  FATHER
+  HUSBAND
+}
+
+enum CropSeason {
+  KHARIF
+  RABI
+  SUMMER
+}
+
+enum ActiveStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Farmer {
+  id                 String       @id @default(uuid()) @db.Uuid
+  userId             String       @unique @map("user_id") @db.Uuid
+  fullName           String       @map("full_name") @db.VarChar(150)
+  relationType       RelationType @map("relation_type")
+  relativeName       String       @map("relative_name") @db.VarChar(150)
+  gender             Gender
+  districtId         String       @map("district_id") @db.Uuid
+  mandalId           String       @map("mandal_id") @db.Uuid
+  villageId          String       @map("village_id") @db.Uuid
+  aadhaarLast4       String?      @map("aadhaar_last4") @db.Char(4)
+  aadhaarHash        String?      @unique @map("aadhaar_hash") @db.Char(64)
+  isAadhaarVerified  Boolean      @default(false) @map("is_aadhaar_verified")
+  notifySms          Boolean      @default(true) @map("notify_sms")
+  notifyInApp        Boolean      @default(true) @map("notify_in_app")
+  notifyPush         Boolean      @default(true) @map("notify_push")
+  registeredByUserId String?      @map("registered_by_user_id") @db.Uuid
+  status             ActiveStatus @default(ACTIVE)
+  createdAt          DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user               User         @relation("FarmerAccount", fields: [userId], references: [id], onDelete: Cascade)
+  registeredBy       User?        @relation("FarmerRegisteredBy", fields: [registeredByUserId], references: [id], onDelete: SetNull)
+  district           District     @relation(fields: [districtId], references: [id], onDelete: Restrict)
+  mandal             Mandal       @relation(fields: [mandalId], references: [id], onDelete: Restrict)
+  village            Village      @relation(fields: [villageId], references: [id], onDelete: Restrict)
+  plots              FarmerPlot[]
+
+  @@index([districtId, mandalId, villageId])
+  @@index([registeredByUserId])
+  @@map("farmers")
+}
+
+model FarmerPlot {
+  id          String     @id @default(uuid()) @db.Uuid
+  farmerId    String     @map("farmer_id") @db.Uuid
+  surveyNo    String     @map("survey_no") @db.VarChar(50)
+  extentAcres Decimal    @map("extent_acres") @db.Decimal(10, 2)
+  villageId   String     @map("village_id") @db.Uuid
+  latitude    Decimal    @db.Decimal(9, 6)
+  longitude   Decimal    @db.Decimal(9, 6)
+  boundary    Json?
+  isActive    Boolean    @default(true) @map("is_active")
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  farmer      Farmer     @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  village     Village    @relation(fields: [villageId], references: [id], onDelete: Restrict)
+  crops       PlotCrop[]
+
+  @@index([farmerId, isActive])
+  @@map("farmer_plots")
+}
+
+model PlotCrop {
+  plotId String     @map("plot_id") @db.Uuid
+  cropId String     @map("crop_id") @db.Uuid
+  season CropSeason
+  year   Int
+  plot   FarmerPlot @relation(fields: [plotId], references: [id], onDelete: Cascade)
+  crop   Crop       @relation(fields: [cropId], references: [id], onDelete: Restrict)
+
+  @@id([plotId, cropId, season, year])
+  @@index([cropId])
+  @@map("plot_crops")
+}
+
+enum ProviderType {
+  INDIVIDUAL
+  FPO
+  CHC
+  AGENCY
+}
+
+enum ProviderStatus {
+  DRAFT
+  SUBMITTED
+  RETURNED
+  APPROVED
+  REJECTED
+  SUSPENDED
+  BLACKLISTED
+}
+
+enum CoverageMode {
+  RADIUS
+  AREAS
+}
+
+enum ReviewStatus {
+  PENDING
+  ACCEPTED
+  RETURNED
+}
+
+enum VerificationAction {
+  SUBMIT
+  APPROVE
+  RETURN
+  REJECT
+  SUSPEND
+  BLACKLIST
+  REINSTATE
+}
+
+enum TravelMode {
+  NONE
+  FLAT
+  PER_KM
+}
+
+model Provider {
+  id               String                 @id @default(uuid()) @db.Uuid
+  providerNo       String                 @unique @map("provider_no") @db.VarChar(20)
+  userId           String                 @unique @map("user_id") @db.Uuid
+  type             ProviderType
+  name             String                 @db.VarChar(200)
+  contactPerson    String                 @map("contact_person") @db.VarChar(150)
+  mobile           String                 @db.VarChar(10)
+  email            String?                @db.VarChar(254)
+  addressLine      String                 @map("address_line") @db.VarChar(300)
+  pincode          String?                @db.Char(6)
+  districtId       String                 @map("district_id") @db.Uuid
+  mandalId         String                 @map("mandal_id") @db.Uuid
+  villageId        String                 @map("village_id") @db.Uuid
+  baseLatitude     Decimal                @map("base_latitude") @db.Decimal(9, 6)
+  baseLongitude    Decimal                @map("base_longitude") @db.Decimal(9, 6)
+  registrationNo   String?                @map("registration_no") @db.VarChar(60)
+  gstin            String?                @db.Char(15)
+  coverageMode     CoverageMode?          @map("coverage_mode")
+  coverageRadiusKm Int?                   @map("coverage_radius_km")
+  status           ProviderStatus         @default(DRAFT)
+  submittedAt      DateTime?              @map("submitted_at") @db.Timestamptz(3)
+  approvedAt       DateTime?              @map("approved_at") @db.Timestamptz(3)
+  approvedById     String?                @map("approved_by_id") @db.Uuid
+  createdAt        DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user             User                   @relation("ProviderAccount", fields: [userId], references: [id], onDelete: Restrict)
+  approvedBy       User?                  @relation("ProviderApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  district         District               @relation(fields: [districtId], references: [id], onDelete: Restrict)
+  mandal           Mandal                 @relation(fields: [mandalId], references: [id], onDelete: Restrict)
+  village          Village                @relation(fields: [villageId], references: [id], onDelete: Restrict)
+  documents        ProviderDocument[]
+  bankAccount      ProviderBankAccount?
+  coverageAreas    ProviderCoverageArea[]
+  workingHours     ProviderWorkingHours[]
+  verifications    ProviderVerification[]
+  equipment        Equipment[]
+  operators        Operator[]
+
+  @@index([status, districtId])
+  @@index([districtId, mandalId])
+  @@map("providers")
+}
+
+model ProviderDocument {
+  id               String       @id @default(uuid()) @db.Uuid
+  providerId       String       @map("provider_id") @db.Uuid
+  documentTypeCode String       @map("document_type_code") @db.VarChar(40)
+  equipmentId      String?      @map("equipment_id") @db.Uuid
+  fileId           String       @unique @map("file_id") @db.Uuid
+  status           ReviewStatus @default(PENDING)
+  remarks          String?      @db.VarChar(500)
+  reviewedById     String?      @map("reviewed_by_id") @db.Uuid
+  reviewedAt       DateTime?    @map("reviewed_at") @db.Timestamptz(3)
+  updatedAt        DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  provider         Provider     @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  documentType     DocumentType @relation(fields: [documentTypeCode], references: [code], onDelete: Restrict)
+  equipment        Equipment?   @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  file             StoredFile   @relation(fields: [fileId], references: [id], onDelete: Restrict)
+  reviewedBy       User?        @relation("DocumentReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([providerId, status])
+  @@index([equipmentId])
+  @@map("provider_documents")
+}
+
+model ProviderBankAccount {
+  id             String       @id @default(uuid()) @db.Uuid
+  providerId     String       @unique @map("provider_id") @db.Uuid
+  holderName     String       @map("holder_name") @db.VarChar(150)
+  accountNoEnc   String       @map("account_no_enc")
+  accountNoLast4 String       @map("account_no_last4") @db.Char(4)
+  ifsc           String       @db.Char(11)
+  bankName       String?      @map("bank_name") @db.VarChar(120)
+  branchName     String?      @map("branch_name") @db.VarChar(160)
+  status         ReviewStatus @default(PENDING)
+  remarks        String?      @db.VarChar(500)
+  reviewedById   String?      @map("reviewed_by_id") @db.Uuid
+  reviewedAt     DateTime?    @map("reviewed_at") @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  provider       Provider     @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  reviewedBy     User?        @relation("BankReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@map("provider_bank_accounts")
+}
+
+model ProviderCoverageArea {
+  id         String   @id @default(uuid()) @db.Uuid
+  providerId String   @map("provider_id") @db.Uuid
+  mandalId   String?  @map("mandal_id") @db.Uuid
+  villageId  String?  @map("village_id") @db.Uuid
+  provider   Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  mandal     Mandal?  @relation(fields: [mandalId], references: [id], onDelete: Restrict)
+  village    Village? @relation(fields: [villageId], references: [id], onDelete: Restrict)
+
+  @@index([providerId])
+  @@map("provider_coverage_areas")
+}
+
+model ProviderWorkingHours {
+  providerId  String   @map("provider_id") @db.Uuid
+  weekday     Int
+  startMinute Int      @map("start_minute")
+  endMinute   Int      @map("end_minute")
+  provider    Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@id([providerId, weekday])
+  @@map("provider_working_hours")
+}
+
+model ProviderVerification {
+  id           String             @id @default(uuid()) @db.Uuid
+  providerId   String             @map("provider_id") @db.Uuid
+  action       VerificationAction
+  fromStatus   ProviderStatus     @map("from_status")
+  toStatus     ProviderStatus     @map("to_status")
+  remarks      String?            @db.VarChar(1000)
+  fieldRemarks Json?              @map("field_remarks")
+  actorId      String             @map("actor_id") @db.Uuid
+  createdAt    DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  provider     Provider           @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  actor        User               @relation("VerificationActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([providerId, createdAt])
+  @@map("provider_verifications")
+}
+
+model Equipment {
+  id            String              @id @default(uuid()) @db.Uuid
+  providerId    String              @map("provider_id") @db.Uuid
+  categoryId    String              @map("category_id") @db.Uuid
+  make          String              @db.VarChar(80)
+  model         String              @db.VarChar(80)
+  year          Int
+  capacityValue Decimal?            @map("capacity_value") @db.Decimal(10, 2)
+  capacityUnit  String?             @map("capacity_unit") @db.VarChar(20)
+  implements    String[]            @default([])
+  status        ActiveStatus        @default(ACTIVE)
+  createdAt     DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  provider      Provider            @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  category      ServiceCategory     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  units         EquipmentUnit[]
+  photos        EquipmentPhoto[]
+  services      EquipmentService[]
+  documents     ProviderDocument[]
+  operators     OperatorEquipment[]
+
+  @@index([providerId, status])
+  @@index([categoryId])
+  @@map("equipment")
+}
+
+model EquipmentPhoto {
+  equipmentId String     @map("equipment_id") @db.Uuid
+  fileId      String     @unique @map("file_id") @db.Uuid
+  sortOrder   Int        @map("sort_order")
+  equipment   Equipment  @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  file        StoredFile @relation(fields: [fileId], references: [id], onDelete: Restrict)
+
+  @@id([equipmentId, fileId])
+  @@map("equipment_photos")
+}
+
+model EquipmentUnit {
+  id             String              @id @default(uuid()) @db.Uuid
+  equipmentId    String              @map("equipment_id") @db.Uuid
+  unitLabel      String              @map("unit_label") @db.VarChar(40)
+  registrationNo String?             @map("registration_no") @db.VarChar(20)
+  droneUin       String?             @map("drone_uin") @db.VarChar(30)
+  status         ActiveStatus        @default(ACTIVE)
+  equipment      Equipment           @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  blocks         AvailabilityBlock[]
+
+  @@unique([equipmentId, unitLabel])
+  @@map("equipment_units")
+}
+
+model EquipmentService {
+  id                   String       @id @default(uuid()) @db.Uuid
+  equipmentId          String       @map("equipment_id") @db.Uuid
+  operationId          String       @map("operation_id") @db.Uuid
+  pricingBasis         PricingBasis @map("pricing_basis")
+  ratePaise            Int          @map("rate_paise")
+  minChargePaise       Int          @default(0) @map("min_charge_paise")
+  travelMode           TravelMode   @default(NONE) @map("travel_mode")
+  travelFlatPaise      Int?         @map("travel_flat_paise")
+  travelPerKmPaise     Int?         @map("travel_per_km_paise")
+  freeRadiusKm         Decimal?     @map("free_radius_km") @db.Decimal(6, 2)
+  workRateAcresPerHour Decimal      @map("work_rate_acres_per_hour") @db.Decimal(6, 2)
+  isActive             Boolean      @default(true) @map("is_active")
+  createdAt            DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  equipment            Equipment    @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  operation            Operation    @relation(fields: [operationId], references: [id], onDelete: Restrict)
+
+  @@unique([equipmentId, operationId])
+  @@index([operationId])
+  @@map("equipment_services")
+}
+
+model RateCap {
+  id           String          @id @default(uuid()) @db.Uuid
+  categoryId   String          @map("category_id") @db.Uuid
+  operationId  String          @map("operation_id") @db.Uuid
+  districtId   String?         @map("district_id") @db.Uuid
+  pricingBasis PricingBasis    @map("pricing_basis")
+  maxRatePaise Int             @map("max_rate_paise")
+  isActive     Boolean         @default(true) @map("is_active")
+  category     ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  operation    Operation       @relation(fields: [operationId], references: [id], onDelete: Cascade)
+  district     District?       @relation(fields: [districtId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId, operationId])
+  @@map("rate_caps")
+}
+
+model AvailabilityBlock {
+  id              String        @id @default(uuid()) @db.Uuid
+  equipmentUnitId String        @map("equipment_unit_id") @db.Uuid
+  startsAt        DateTime      @map("starts_at") @db.Timestamptz(3)
+  endsAt          DateTime      @map("ends_at") @db.Timestamptz(3)
+  reason          String        @db.VarChar(200)
+  createdById     String        @map("created_by_id") @db.Uuid
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  unit            EquipmentUnit @relation(fields: [equipmentUnitId], references: [id], onDelete: Cascade)
+  createdBy       User          @relation("BlockCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([equipmentUnitId, startsAt])
+  @@map("availability_blocks")
+}
+
+model Operator {
+  id            String              @id @default(uuid()) @db.Uuid
+  userId        String              @unique @map("user_id") @db.Uuid
+  providerId    String              @map("provider_id") @db.Uuid
+  fullName      String              @map("full_name") @db.VarChar(150)
+  licenceNo     String?             @map("licence_no") @db.VarChar(40)
+  licenceFileId String?             @unique @map("licence_file_id") @db.Uuid
+  status        ActiveStatus        @default(ACTIVE)
+  createdAt     DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user          User                @relation("OperatorAccount", fields: [userId], references: [id], onDelete: Restrict)
+  provider      Provider            @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  licenceFile   StoredFile?         @relation(fields: [licenceFileId], references: [id], onDelete: Restrict)
+  equipment     OperatorEquipment[]
+
+  @@index([providerId, status])
+  @@map("operators")
+}
+
+model OperatorEquipment {
+  operatorId  String    @map("operator_id") @db.Uuid
+  equipmentId String    @map("equipment_id") @db.Uuid
+  operator    Operator  @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  @@id([operatorId, equipmentId])
+  @@index([equipmentId])
+  @@map("operator_equipment")
 }

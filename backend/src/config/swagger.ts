@@ -1,62 +1,21 @@
-import { roleNames } from "../modules/rbac/roles.js";
+import {
+  object,
+  ref,
+  string,
+  nullableString,
+  uuid,
+  language,
+  username,
+  password,
+  providedPassword,
+  consent,
+  roles,
+  auth,
+  user,
+  operation,
+} from "./swagger-helpers.js";
+import { milestone3Paths, milestone3Schemas, milestone3Tags } from "./swagger-m3.js";
 
-const object = (properties: Record<string, unknown>, required = Object.keys(properties)) => ({
-  type: "object",
-  properties,
-  required,
-  additionalProperties: false,
-});
-const ref = (name: string) => ({ $ref: "#/components/schemas/" + name });
-const json = (schema: unknown) => ({ "application/json": { schema } });
-const string = { type: "string" };
-const nullableString = { ...string, nullable: true };
-const uuid = { ...string, format: "uuid" };
-const language = { ...string, enum: ["en", "te"] };
-const username = { ...string, minLength: 3, maxLength: 50, pattern: "^[A-Za-z0-9._-]+$" };
-const password = { ...string, minLength: 12, maxLength: 128, format: "password", writeOnly: true };
-const providedPassword = { ...password, minLength: 1 };
-const consent = { type: "boolean", enum: [true] };
-const roles = { type: "array", items: { ...string, enum: Object.keys(roleNames) } };
-const success = (description: string, data: unknown) => ({
-  description,
-  content: json(object({ success: { type: "boolean", enum: [true] }, message: string, data })),
-});
-const failure = (description: string) => ({ description, content: json(ref("Error")) });
-const csrf = { $ref: "#/components/parameters/CsrfProtection" };
-
-type Operation = {
-  tag: string;
-  summary: string;
-  data?: unknown;
-  body?: string;
-  authenticated?: boolean;
-  csrf?: boolean;
-  created?: boolean;
-  errors?: Record<number, string>;
-  description?: string;
-};
-function operation(options: Operation) {
-  return {
-    tags: [options.tag],
-    summary: options.summary,
-    description: options.description,
-    ...(options.csrf && { parameters: [csrf] }),
-    ...(options.authenticated && { security: [{ bearerAuth: [] }] }),
-    ...(options.body && { requestBody: { required: true, content: json(ref(options.body)) } }),
-    responses: {
-      [options.created ? 201 : 200]: success(options.summary, options.data ?? object({})),
-      ...Object.fromEntries(
-        Object.entries({
-          ...(options.authenticated ? { 401: "Authentication required or session invalid" } : {}),
-          ...options.errors,
-        }).map(([status, description]) => [status, failure(description)]),
-      ),
-    },
-  };
-}
-const auth = (options: Omit<Operation, "tag">) => operation({ tag: "Authentication", ...options });
-const user = (options: Omit<Operation, "tag" | "authenticated">) =>
-  operation({ tag: "Account", authenticated: true, ...options });
 const portal = (name: string) => ({
   get: operation({
     tag: "Portals",
@@ -79,9 +38,10 @@ export const openApi = {
     title: "Mana Yantram API",
     version: "1.0.0",
     description:
-      "Milestones 1 and 2. Session endpoints use a refresh cookie and an explicit CSRF header.",
+      "Milestones 1 to 3. Session endpoints use a refresh cookie and an explicit CSRF header. Every write request needs the X-CSRF-Protection header.",
   },
   servers: [{ url: "/api/v1" }],
+  tags: milestone3Tags,
   components: {
     securitySchemes: { bearerAuth: { type: "http", scheme: "bearer", bearerFormat: "JWT" } },
     parameters: {
@@ -140,6 +100,7 @@ export const openApi = {
         emailVerified: { type: "boolean" },
         createdAt: { ...string, format: "date-time" },
       }),
+      ...milestone3Schemas,
       ProfileUpdate: {
         ...object(
           {
@@ -165,9 +126,9 @@ export const openApi = {
     "/health/ready": {
       get: operation({
         tag: "Health",
-        summary: "Check PostgreSQL readiness",
+        summary: "Check PostgreSQL and file storage readiness",
         data: object({ status: string }),
-        errors: { 503: "PostgreSQL is unavailable" },
+        errors: { 503: "PostgreSQL or file storage is unavailable" },
       }),
     },
     "/auth/register": {
@@ -256,6 +217,8 @@ export const openApi = {
     },
     "/portals/farmer": portal("farmer"),
     "/portals/provider": portal("provider"),
+    "/portals/operator": portal("operator"),
     "/portals/admin": portal("department"),
+    ...milestone3Paths,
   },
 };

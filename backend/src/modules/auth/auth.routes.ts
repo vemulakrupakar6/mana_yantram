@@ -3,7 +3,7 @@ import { authenticate } from "../../middleware/authenticate.js";
 import { protectCookieOperation } from "../../middleware/csrf.js";
 import { rateLimit } from "../../middleware/rate-limit.js";
 import { validate } from "../../middleware/validate.js";
-import { loginSchema, passwordSchema, registerSchema } from "./auth.schema.js";
+import { addRoleSchema, loginSchema, passwordSchema, registerSchema } from "./auth.schema.js";
 import * as controller from "./auth.controller.js";
 
 export const authRoutes = Router();
@@ -32,4 +32,12 @@ authRoutes.patch(
   validate(passwordSchema),
   rateLimit("password", 20),
   controller.changePassword,
+);
+authRoutes.post(
+  "/roles",
+  protectCookieOperation,
+  authenticate,
+  validate(addRoleSchema),
+  rateLimit("roles", 20),
+  controller.addRole,
 );

@@ -1,4 +1,4 @@
-import type { OnboardingStatus, RoleCode } from "@prisma/client";
+import type { JurisdictionLevel, OnboardingStatus, RoleCode } from "@prisma/client";
 
 export interface UserSummary {
   id: string;
@@ -8,6 +8,12 @@ export interface UserSummary {
   permissions: string[];
   preferredLanguage: "en" | "te";
   onboarding: Partial<Record<RoleCode, OnboardingStatus>>;
+  mustChangePassword: boolean;
+  jurisdiction: {
+    level: JurisdictionLevel;
+    districtId: string | null;
+    mandalId: string | null;
+  } | null;
 }
 export interface RequestDetails {
   requestId: string;

@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "Mana Yantram · Milestones 1 and 2",
-    "description": "Use the local environment and Postman’s cookie jar. Set a new username and a 12–128 character password before registration, or enter credentials for an existing development account. Login, registration and refresh store the returned bearer token in the active environment. Run the portal requests with matching roles.",
+    "name": "Mana Yantram · Milestones 1 to 3",
+    "description": "Use the local environment and Postman's cookie jar. Register or log in first: the bearer token is stored in `accessToken`. Requests are grouped by area and chain through environment variables (`fileId`, `providerId`, `equipmentId`, ...) that earlier requests fill in, so run each folder top to bottom. Department folders (Accounts and users, Verification) need a department login whose role has the noted permission. Every write sends X-CSRF-Protection: 1.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -69,7 +69,9 @@
               "listen": "test",
               "script": {
                 "type": "text/javascript",
-                "exec": ["pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"]
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
               }
             }
           ]
@@ -521,6 +523,3737 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Masters",
+      "item": [
+        {
+          "name": "Districts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/masters/districts",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 200) { const data = pm.response.json().data; pm.environment.set('districtId', data[0].id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mandals of the district",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/masters/districts/{{districtId}}/mandals",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 200) { const data = pm.response.json().data; pm.environment.set('mandalId', data[0].id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Villages of the mandal",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/masters/mandals/{{mandalId}}/villages",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 200) { const data = pm.response.json().data; pm.environment.set('villageId', data[0].id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Service categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/masters/categories",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 200) { const data = pm.response.json().data; const tractor = data.find((c) => c.code === 'TRACTOR'); pm.environment.set('categoryId', tractor.id); pm.environment.set('operationId', tractor.operations.find((o) => o.code === 'PLOUGHING').id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Document types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/masters/document-types",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crops",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/masters/crops",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 200) { const data = pm.response.json().data; pm.environment.set('cropId', data.find((c) => c.code === 'PADDY').id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "IFSC lookup (needs the optional directory)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/masters/ifsc/SBIN0000001",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Public lookups. Run these first: they fill districtId, mandalId, villageId, categoryId, operationId and cropId."
+    },
+    {
+      "name": "Accounts and users",
+      "item": [
+        {
+          "name": "Add the provider role to my account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/roles",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Farmer and provider accounts only; department and operator accounts get 403 ROLE_NOT_GRANTABLE.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"PROVIDER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List users (users.manage)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/users?status=ACTIVE&page=1&pageSize=20",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create department user (users.manage)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/users",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"district.officer.1\",\n  \"displayName\": \"District Officer\",\n  \"role\": \"DISTRICT_OFFICER\",\n  \"jurisdiction\": {\n    \"level\": \"DISTRICT\",\n    \"districtId\": \"{{districtId}}\"\n  },\n  \"temporaryPassword\": \"{{temporaryPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 201) { const data = pm.response.json().data; pm.environment.set('userId', data.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get user",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/users/{{userId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Deactivate user",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/users/{{userId}}/deactivate",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Left the department\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reactivate user",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/users/{{userId}}/reactivate",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reset user password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/users/{{userId}}/reset-password",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temporaryPassword\": \"{{temporaryPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Files",
+      "item": [
+        {
+          "name": "Upload a document (step 1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/files",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Pick a PDF, JPEG or PNG in the file field. The returned id is then sent in a JSON body (step 2).",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "purpose",
+                  "value": "DOCUMENT",
+                  "type": "text"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 201) { const data = pm.response.json().data; pm.environment.set('fileId', data.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Upload an equipment photo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/files",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "JPEG, PNG or WebP.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "purpose",
+                  "value": "EQUIPMENT_PHOTO",
+                  "type": "text"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 201) { const data = pm.response.json().data; pm.environment.set('photoFileId', data.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Download a file",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/files/{{fileId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete an unattached upload",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/files/{{fileId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Farmer",
+      "item": [
+        {
+          "name": "Create farmer profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/farmers/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Ravi Kumar\",\n  \"relationType\": \"FATHER\",\n  \"relativeName\": \"Suresh Kumar\",\n  \"gender\": \"MALE\",\n  \"mobile\": \"9876543210\",\n  \"districtId\": \"{{districtId}}\",\n  \"mandalId\": \"{{mandalId}}\",\n  \"villageId\": \"{{villageId}}\",\n  \"preferredLanguage\": \"en\",\n  \"notifications\": {\n    \"sms\": true,\n    \"inApp\": true,\n    \"push\": false\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get farmer profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/farmers/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update farmer profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/farmers/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Ravi K\",\n  \"notifications\": {\n    \"push\": true\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List plots",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/farmers/me/plots",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create plot",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/farmers/me/plots",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"surveyNo\": \"12/A\",\n  \"extentAcres\": 2.5,\n  \"villageId\": \"{{villageId}}\",\n  \"latitude\": 17.385,\n  \"longitude\": 78.4867,\n  \"crops\": [\n    {\n      \"cropId\": \"{{cropId}}\",\n      \"season\": \"KHARIF\",\n      \"year\": 2026\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 201) { const data = pm.response.json().data; pm.environment.set('plotId', data.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get plot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/farmers/me/plots/{{plotId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update plot",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/farmers/me/plots/{{plotId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"extentAcres\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete plot",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/farmers/me/plots/{{plotId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Log in as a farmer. The Aadhaar number is optional on the profile and is never returned."
+    },
+    {
+      "name": "Assisted registration",
+      "item": [
+        {
+          "name": "Register a farmer (farmer.register_assisted)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/assisted/farmers",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account\": {\n    \"username\": \"farmer.assisted.1\",\n    \"temporaryPassword\": \"{{temporaryPassword}}\"\n  },\n  \"profile\": {\n    \"fullName\": \"Ravi Kumar\",\n    \"relationType\": \"FATHER\",\n    \"relativeName\": \"Suresh Kumar\",\n    \"gender\": \"MALE\",\n    \"mobile\": \"9876543210\",\n    \"districtId\": \"{{districtId}}\",\n    \"mandalId\": \"{{mandalId}}\",\n    \"villageId\": \"{{villageId}}\",\n    \"preferredLanguage\": \"en\",\n    \"notifications\": {\n      \"sms\": true,\n      \"inApp\": true,\n      \"push\": false\n    }\n  },\n  \"consent\": {\n    \"farmerConsented\": true,\n    \"acceptTerms\": true,\n    \"acceptPrivacyPolicy\": true\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 201) { const data = pm.response.json().data; pm.environment.set('farmerId', data.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "My registrations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/assisted/farmers?page=1",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "One registration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/assisted/farmers/{{farmerId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add a plot",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/assisted/farmers/{{farmerId}}/plots",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"surveyNo\": \"12/A\",\n  \"extentAcres\": 2.5,\n  \"villageId\": \"{{villageId}}\",\n  \"latitude\": 17.385,\n  \"longitude\": 78.4867,\n  \"crops\": [\n    {\n      \"cropId\": \"{{cropId}}\",\n      \"season\": \"KHARIF\",\n      \"year\": 2026\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Officer: farmers in my jurisdiction (farmer.view)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/farmers?assisted=true",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Officer: one farmer",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/farmers/{{farmerId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Log in as a field agent or helpdesk user. The farmer must change the temporary password at first sign-in."
+    },
+    {
+      "name": "Provider application",
+      "item": [
+        {
+          "name": "Create provider profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"INDIVIDUAL\",\n  \"name\": \"Sri Rama Agro Services\",\n  \"contactPerson\": \"Rama Rao\",\n  \"mobile\": \"9876543211\",\n  \"addressLine\": \"Main road, near bus stand\",\n  \"districtId\": \"{{districtId}}\",\n  \"mandalId\": \"{{mandalId}}\",\n  \"villageId\": \"{{villageId}}\",\n  \"baseLatitude\": 17.385,\n  \"baseLongitude\": 78.4867\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 201) { const data = pm.response.json().data; pm.environment.set('providerId', data.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get application",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/providers/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update profile (DRAFT or RETURNED)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sri Rama Agro\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Required documents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/providers/me/documents",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 200) { const data = pm.response.json().data; pm.environment.set('documentId', (data.find((d) => d.document) || {document: {}}).document.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Attach a document",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/documents",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentTypeCode\": \"ID_PROOF\",\n  \"fileId\": \"{{fileId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove a document",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/documents/{{documentId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save bank account",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/bank-account",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"holderName\": \"Rama Rao\",\n  \"accountNumber\": \"123456789012\",\n  \"confirmAccountNumber\": \"123456789012\",\n  \"ifsc\": \"SBIN0001234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Coverage: radius",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/coverage",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"RADIUS\",\n  \"radiusKm\": 25\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Coverage: areas",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/coverage",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"AREAS\",\n  \"areas\": [\n    {\n      \"mandalId\": \"{{mandalId}}\"\n    },\n    {\n      \"villageId\": \"{{villageId}}\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Working hours",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/working-hours",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"days\": [\n    {\n      \"weekday\": 1,\n      \"start\": \"06:00\",\n      \"end\": \"18:00\"\n    },\n    {\n      \"weekday\": 2,\n      \"start\": \"06:00\",\n      \"end\": \"18:00\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submission checklist",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/providers/me/checklist",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit for verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/submit",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verification history",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/providers/me/verification-history",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Log in as a provider. Submitting needs every checklist item done; returned items must be replaced before resubmitting."
+    },
+    {
+      "name": "Equipment",
+      "item": [
+        {
+          "name": "List equipment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/providers/me/equipment",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create equipment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/equipment",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"make\": \"Mahindra\",\n  \"model\": \"575 DI\",\n  \"year\": 2021,\n  \"capacityValue\": 50,\n  \"capacityUnit\": \"HP\",\n  \"implements\": [\n    \"Plough\"\n  ],\n  \"numberOfUnits\": 2,\n  \"photoFileIds\": [\n    \"{{photoFileId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 201) { const data = pm.response.json().data; pm.environment.set('equipmentId', data.id); pm.environment.set('unitId', data.units[0].id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get equipment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/providers/me/equipment/{{equipmentId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update equipment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/equipment/{{equipmentId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"575 DI XP Plus\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Deactivate equipment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/equipment/{{equipmentId}}/deactivate",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Activate equipment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/equipment/{{equipmentId}}/activate",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Set photos",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/equipment/{{equipmentId}}/photos",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fileIds\": [\n    \"{{photoFileId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List units",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/providers/me/equipment/{{equipmentId}}/units",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add units",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/equipment/{{equipmentId}}/units",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"count\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update a unit",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/equipment/{{equipmentId}}/units/{{unitId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registrationNo\": \"TS09AB1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Rate card",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/providers/me/equipment/{{equipmentId}}/services",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add a rate-card line",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/equipment/{{equipmentId}}/services",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operationId\": \"{{operationId}}\",\n  \"pricingBasis\": \"ACRE\",\n  \"ratePaise\": 80000,\n  \"minChargePaise\": 50000,\n  \"travelMode\": \"PER_KM\",\n  \"travelPerKmPaise\": 1500,\n  \"freeRadiusKm\": 5,\n  \"workRateAcresPerHour\": 1.5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 201) { const data = pm.response.json().data; pm.environment.set('serviceId', data.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update a rate-card line",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/equipment/{{equipmentId}}/services/{{serviceId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ratePaise\": 85000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove a rate-card line",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/equipment/{{equipmentId}}/services/{{serviceId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Money is integer paise (rupees x 100). Upload a photo first so photoFileId is set."
+    },
+    {
+      "name": "Availability",
+      "item": [
+        {
+          "name": "Blocked periods (all units)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/providers/me/availability",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Blocked periods (one unit)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/providers/me/units/{{unitId}}/blocks",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Block a period",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/units/{{unitId}}/blocks",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startsAt\": \"{{blockStart}}\",\n  \"endsAt\": \"{{blockEnd}}\",\n  \"reason\": \"Servicing\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('blockStart', new Date(Date.now() + 86400000).toISOString());",
+                  "pm.environment.set('blockEnd', new Date(Date.now() + 3 * 86400000).toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 201) { const data = pm.response.json().data; pm.environment.set('blockId', data.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove a blocked period",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/units/{{unitId}}/blocks/{{blockId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Operators",
+      "item": [
+        {
+          "name": "List operators",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/providers/me/operators",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create operator",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/operators",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Venkat Operator\",\n  \"mobile\": \"9876543212\",\n  \"username\": \"operator.venkat\",\n  \"temporaryPassword\": \"{{temporaryPassword}}\",\n  \"licenceNo\": \"DL-123456\",\n  \"equipmentIds\": [\n    \"{{equipmentId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 201) { const data = pm.response.json().data; pm.environment.set('operatorId', data.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get operator",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/providers/me/operators/{{operatorId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update operator",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/operators/{{operatorId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Venkat K\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Assign equipment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/operators/{{operatorId}}/equipment",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipmentIds\": [\n    \"{{equipmentId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Deactivate operator",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/operators/{{operatorId}}/deactivate",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Activate operator",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/operators/{{operatorId}}/activate",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reset operator password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/providers/me/operators/{{operatorId}}/reset-password",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temporaryPassword\": \"{{temporaryPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "As the operator: my profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/operator/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "Log in as the operator (after changing the temporary password)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Verification (officer)",
+      "item": [
+        {
+          "name": "Review queue (provider.view)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/providers?status=SUBMITTED&page=1",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 200) { const data = pm.response.json().data; pm.environment.set('providerId', data.items.length ? data.items[0].id : pm.environment.get('providerId')); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Application detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/providers/{{providerId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 200) { const data = pm.response.json().data; pm.environment.set('documentId', (data.documents.find((d) => d.document) || {document: {}}).document.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Accept a document (provider.verify)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/providers/{{providerId}}/documents/{{documentId}}/review",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"ACCEPT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Return a document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/providers/{{providerId}}/documents/{{documentId}}/review",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"RETURN\",\n  \"remarks\": \"The photo is blurry\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Accept the bank account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/providers/{{providerId}}/bank-account/review",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"ACCEPT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reveal the account number (audited)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/providers/{{providerId}}/bank-account/reveal",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Approve",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/providers/{{providerId}}/verify",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"APPROVE\",\n  \"remarks\": \"All documents verified\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Return for changes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/providers/{{providerId}}/verify",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"RETURN\",\n  \"remarks\": \"Please fix the items below\",\n  \"fieldRemarks\": {\n    \"name\": \"Use your registered business name\",\n    \"equipment\": {\n      \"{{equipmentId}}\": \"The photo does not show the machine\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reject",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/providers/{{providerId}}/verify",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"REJECT\",\n  \"remarks\": \"Not an eligible provider\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Suspend (provider.suspend)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/providers/{{providerId}}/suspend",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"remarks\": \"Complaints received\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reinstate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/providers/{{providerId}}/reinstate",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"remarks\": \"Resolved\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Blacklist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/providers/{{providerId}}/blacklist",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"remarks\": \"Fraud confirmed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Log in as a district officer or administrator. Approve needs every required document and the bank account accepted."
+    },
+    {
+      "name": "Rate caps",
+      "item": [
+        {
+          "name": "Is enforcement on? (settings.manage)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/settings/rate-caps-enabled",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Switch enforcement on",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/settings/rate-caps-enabled",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List caps",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/admin/rate-caps?page=1&pageSize=50",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create a statewide cap",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/rate-caps",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"operationId\": \"{{operationId}}\",\n  \"pricingBasis\": \"ACRE\",\n  \"maxRatePaise\": 100000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));",
+                  "if (pm.response.code === 201) { const data = pm.response.json().data; pm.environment.set('rateCapId', data.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create a district cap",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/rate-caps",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"operationId\": \"{{operationId}}\",\n  \"districtId\": \"{{districtId}}\",\n  \"pricingBasis\": \"ACRE\",\n  \"maxRatePaise\": 60000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Change or deactivate a cap",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "X-CSRF-Protection",
+                "value": "1",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/admin/rate-caps/{{rateCapId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"maxRatePaise\": 90000,\n  \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "As a provider: the cap for my district",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/masters/rate-cap?categoryId={{categoryId}}&operationId={{operationId}}&pricingBasis=ACRE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Response follows the success envelope\", () => pm.expect(pm.response.json().success).to.equal(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Optional maximum rates. Enforcement is off until switched on. Use a state or super admin login (settings.manage); the last request needs a provider login."
     }
   ]
 }

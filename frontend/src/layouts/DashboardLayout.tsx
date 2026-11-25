@@ -63,25 +63,27 @@ export function Sidebar({
   return (
     <aside className={"dashboard-sidebar" + (open ? " open" : "")} id="dashboard-sidebar">
       <nav aria-label={t("menu")}>
-        {portalMenus[portal].map(({ label, href, icon: Icon }) =>
-          href ? (
-            <NavLink key={label} to={href} onClick={close} className="side-item">
-              <Icon size={19} />
-              {t(label)}
-            </NavLink>
-          ) : (
-            <span
-              key={label}
-              className="side-item side-disabled"
-              aria-disabled="true"
-              title={t("comingSoon")}
-            >
-              <Icon size={19} />
-              {t(label)}
-              <span className="sr-only"> · {t("comingSoon")}</span>
-            </span>
-          ),
-        )}
+        {portalMenus[portal]
+          .filter(({ permission }) => !permission || user.permissions.includes(permission))
+          .map(({ label, href, icon: Icon }) =>
+            href ? (
+              <NavLink key={label} to={href} onClick={close} className="side-item">
+                <Icon size={19} />
+                {t(label)}
+              </NavLink>
+            ) : (
+              <span
+                key={label}
+                className="side-item side-disabled"
+                aria-disabled="true"
+                title={t("comingSoon")}
+              >
+                <Icon size={19} />
+                {t(label)}
+                <span className="sr-only"> · {t("comingSoon")}</span>
+              </span>
+            ),
+          )}
         {user.roles.length > 1 && (
           <NavLink to="/select-role" className="side-item" onClick={close}>
             {t("switchRole")}
@@ -134,6 +136,9 @@ export function FarmerLayout() {
 }
 export function ProviderLayout() {
   return <DashboardLayout portal="provider" />;
+}
+export function OperatorLayout() {
+  return <DashboardLayout portal="operator" />;
 }
 export function AdminLayout() {
   return <DashboardLayout portal="admin" />;

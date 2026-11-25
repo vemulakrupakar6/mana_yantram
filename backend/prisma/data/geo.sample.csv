@@ -1,0 +1,13 @@
+district_lgd,district_en,district_te,mandal_lgd,mandal_en,mandal_te,village_lgd,village_en,village_te
+T001,Sample District A,నమూనా జిల్లా ఎ,T101,Sample Mandal A1,నమూనా మండలం ఎ1,T1001,Sample Village A1a,నమూనా గ్రామం ఎ1ఎ
+T001,Sample District A,నమూనా జిల్లా ఎ,T101,Sample Mandal A1,నమూనా మండలం ఎ1,T1002,Sample Village A1b,నమూనా గ్రామం ఎ1బి
+T001,Sample District A,నమూనా జిల్లా ఎ,T101,Sample Mandal A1,నమూనా మండలం ఎ1,T1003,Sample Village A1c,నమూనా గ్రామం ఎ1సి
+T001,Sample District A,నమూనా జిల్లా ఎ,T102,Sample Mandal A2,నమూనా మండలం ఎ2,T1004,Sample Village A2a,నమూనా గ్రామం ఎ2ఎ
+T001,Sample District A,నమూనా జిల్లా ఎ,T102,Sample Mandal A2,నమూనా మండలం ఎ2,T1005,Sample Village A2b,నమూనా గ్రామం ఎ2బి
+T001,Sample District A,నమూనా జిల్లా ఎ,T102,Sample Mandal A2,నమూనా మండలం ఎ2,T1006,Sample Village A2c,నమూనా గ్రామం ఎ2సి
+T002,Sample District B,నమూనా జిల్లా బి,T201,Sample Mandal B1,నమూనా మండలం బి1,T2001,Sample Village B1a,నమూనా గ్రామం బి1ఎ
+T002,Sample District B,నమూనా జిల్లా బి,T201,Sample Mandal B1,నమూనా మండలం బి1,T2002,Sample Village B1b,నమూనా గ్రామం బి1బి
+T002,Sample District B,నమూనా జిల్లా బి,T201,Sample Mandal B1,నమూనా మండలం బి1,T2003,Sample Village B1c,నమూనా గ్రామం బి1సి
+T002,Sample District B,నమూనా జిల్లా బి,T202,Sample Mandal B2,నమూనా మండలం బి2,T2004,Sample Village B2a,నమూనా గ్రామం బి2ఎ
+T002,Sample District B,నమూనా జిల్లా బి,T202,Sample Mandal B2,నమూనా మండలం బి2,T2005,Sample Village B2b,నమూనా గ్రామం బి2బి
+T002,Sample District B,నమూనా జిల్లా బి,T202,Sample Mandal B2,నమూనా మండలం బి2,T2006,Sample Village B2c,నమూనా గ్రామం బి2సి

@@ -42,6 +42,16 @@ const config = z
     LOG_LEVEL: z
       .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
       .default("info"),
+    STORAGE_ROOT: z.string().min(1).default("./storage"),
+    UPLOAD_MAX_DOCUMENT_MB: z.coerce.number().min(1).max(8).default(5),
+    UPLOAD_MAX_PHOTO_MB: z.coerce.number().min(1).max(8).default(8),
+    FIELD_ENCRYPTION_KEY: z
+      .string()
+      .refine((key) => Buffer.from(key, "base64").length === 32, "Must decode to exactly 32 bytes"),
+    AADHAAR_HASH_KEY: z
+      .string()
+      .min(32)
+      .refine((key) => !key.startsWith("REPLACE_")),
     AUTH_MODE: z.literal("password").default("password"),
     SEED_DEMO_USERS: z
       .enum(["true", "false"])
